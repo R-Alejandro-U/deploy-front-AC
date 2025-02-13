@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 
-// Carga Map dinámicamente sin SSR
 const Map = dynamic(() => import('@/components/Map'), { ssr: false });
 
 export default function ContactPage() {

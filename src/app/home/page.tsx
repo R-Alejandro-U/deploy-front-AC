@@ -1,13 +1,11 @@
-import InfoHome from "@/components/HomeInfo/InfoHome";
-
+import dynamic from "next/dynamic"
+const InfoHome = dynamic(() => import("@/components/HomeInfo/InfoHome"), { ssr: false })
 export default function Home() {
   return (
     <main>
-      {/* Container Section */}
       <div className="hero text-white">
-        {/* Info Section */}
         <InfoHome />
       </div>
     </main>
-  );
+  )
 }
