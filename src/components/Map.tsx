@@ -1,17 +1,16 @@
 "use client"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// components/Map.tsx
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 
-// Importar los marcadores de Leaflet
+// Importar los íconos de Leaflet
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
 import markerShadow from 'leaflet/dist/images/marker-shadow.png'
 
-// Corregir el problema de los íconos en Next.js
+// Corregir los íconos en Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl
 L.Icon.Default.mergeOptions({
   iconUrl: markerIcon.src, 
@@ -35,14 +34,21 @@ interface MapProps {
 }
 
 const Map = ({ center, zoom, markers }: MapProps) => {
+  const mapRef = useRef<L.Map | null>(null) // Referencia para el mapa
+  const mapContainerRef = useRef<HTMLDivElement | null>(null) // Referencia para el contenedor
+
   useEffect(() => {
-    const map = L.map('map').setView([center.lat, center.lng], zoom)
+    if (typeof window === "undefined") return // Evitar errores en SSR
+
+    if (!mapContainerRef.current || mapRef.current) return // Evitar re-creación
+
+    const map = L.map(mapContainerRef.current).setView([center.lat, center.lng], zoom)
+    mapRef.current = map // Guardar referencia al mapa
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
     }).addTo(map)
 
-    // Añadir todos los marcadores
     markers.forEach(marker => {
       L.marker([marker.lat, marker.lng])
         .bindPopup(marker.title)
@@ -50,11 +56,12 @@ const Map = ({ center, zoom, markers }: MapProps) => {
     })
 
     return () => {
-      map.remove()
+      map.remove() // Limpiar el mapa al desmontar el componente
+      mapRef.current = null
     }
   }, [center, zoom, markers])
 
-  return <div id="map" style={{ height: '500px', width: '100%' }} />
+  return <div ref={mapContainerRef} style={{ height: '500px', width: '100%' }} />
 }
 
 export default Map
